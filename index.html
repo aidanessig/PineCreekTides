@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pine Creek Tides</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Pine Creek Boating Report</h1>
+
+      <!-- Button for NWS Report -->
+      <button id="open-nws-btn" class="nws-button">
+        View Official NWS Report
+      </button>
+    </header>
+
+    <main>
+      <!-- Today's Conditions -->
+      <section id="today-conditions" class="card">
+        <h2>
+          Live Conditions
+          <span
+            id="open-info-btn"
+            style="cursor: pointer; font-size: 1.2rem; margin-left: 2px"
+            >ⓘ</span
+          >
+        </h2>
+        <div id="conditions-content">
+          <!-- Wind, Water Level, Next Tide, Last Updated -->
+        </div>
+        <div id="forecast-conditions-content">
+          <!-- 2h, 4h, 6h, 8h forecast table will go here -->
+        </div>
+      </section>
+
+      <!-- Today's Tides -->
+      <section id="today-tides" class="card">
+        <div class="section-header">
+          <h2>
+            <span id="today-tides-title">Today's Tides</span>
+            <span
+              id="open-tides-info-btn"
+              style="cursor: pointer; font-size: 1.2rem; margin-left: 2px"
+              >ⓘ</span
+            >
+          </h2>
+          <div id="location-toggle">
+            <button class="today-location-btn active" data-location="southport">
+              Southport
+            </button>
+            <button class="today-location-btn" data-location="norwalk">
+              Norwalk
+            </button>
+            <button class="today-location-btn" data-location="portjefferson">
+              Port Jefferson
+            </button>
+          </div>
+        </div>
+        <table id="today-tides-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Time</th>
+              <th>Height</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Tides for today will go here -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Future Tides -->
+      <section id="future-tides" class="card">
+        <div class="section-header">
+          <h2>
+            30-Day Tide Table
+            <span
+              id="open-future-info-btn"
+              style="cursor: pointer; font-size: 1.2rem; margin-left: 2px"
+              >ⓘ</span
+            >
+          </h2>
+          <div id="future-location-toggle">
+            <button
+              class="future-location-btn active"
+              data-future-location="southport"
+            >
+              Southport
+            </button>
+            <button class="future-location-btn" data-future-location="norwalk">
+              Norwalk
+            </button>
+            <button
+              class="future-location-btn"
+              data-future-location="portjefferson"
+            >
+              Port Jefferson
+            </button>
+          </div>
+        </div>
+        <table id="future-tides-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>High Tide 1</th>
+              <th>High Tide 2</th>
+              <th>Low Tide 1</th>
+              <th>Low Tide 2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Tides for future days will go here -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Modal for NWS Report -->
+      <div id="nws-modal" class="modal">
+        <div class="modal-content">
+          <span id="close-nws-btn" class="close">&times;</span>
+          <pre id="nws-text">Loading NWS Report...</pre>
+        </div>
+      </div>
+
+      <!-- Modal for Info Popup -->
+      <div id="info-modal" class="modal">
+        <div class="modal-content">
+          <span id="close-info-btn" class="close">&times;</span>
+          <div id="info-text">
+            <h3>Data Sources:</h3>
+            <p>
+              <strong>Bridgeport Station (8467150):</strong> Located north-west
+              of Steelepointe, across the harbor from the Port Jefferson ferry
+              terminal. Provides live wind and air temperature data.
+            </p>
+            <p>
+              <strong>New Haven Station (8465705):</strong> Used for water
+              temperature readings. The Bridgeport water temperature sensor has
+              been offline since December 16, 2024.
+            </p>
+            <p>All data provided by NOAA Tides and Currents services.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal for Tides Info -->
+      <div id="tides-info-modal" class="modal">
+        <div class="modal-content">
+          <span id="close-tides-info-btn" class="close">&times;</span>
+          <div id="tides-info-text">
+            <h3>Tide Station Locations:</h3>
+            <p>
+              <strong>Southport Station (8467726):</strong> Located at the
+              southwest corner of Pequot Yacht Club in Southport.
+            </p>
+            <p>
+              <strong>Norwalk Station (8468448):</strong> Located near Sono
+              Seaport Seafood in South Norwalk.
+            </p>
+            <p>
+              <strong>Port Jefferson Station (8514560):</strong> Located at the
+              fuel dock for the Port Jefferson power station.
+            </p>
+            <p>All data provided by NOAA Tides and Currents services.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal for Future Tides Info -->
+      <div id="future-info-modal" class="modal">
+        <div class="modal-content">
+          <span id="close-future-info-btn" class="close">&times;</span>
+          <div id="future-info-text">
+            <h3>Tide Station Locations:</h3>
+            <p>
+              <strong>Southport Station (8467726):</strong> Located at the
+              southwest corner of Pequot Yacht Club in Southport.
+            </p>
+            <p>
+              <strong>Norwalk Station (8468448):</strong> Located near Sono
+              Seaport Seafood in South Norwalk.
+            </p>
+            <p>
+              <strong>Port Jefferson Station (8514560):</strong> Located at the
+              fuel dock for the Port Jefferson power station.
+            </p>
+            <p>All data provided by NOAA Tides and Currents services.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>Safe Voyage!</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
