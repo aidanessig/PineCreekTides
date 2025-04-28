@@ -187,25 +187,39 @@ async function fetchConditions() {
 // fetch nws report
 function fetchNwsReport() {
   const realUrl = 'https://tgftp.nws.noaa.gov/data/raw/fz/fzus51.kokx.cwf.okx.txt';
-  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(realUrl)}`;
 
-  fetch(proxyUrl)
-    .then(response => {
-      if (!response.ok) throw new Error('network response not ok');
-      return response.text();
-    })
-    .then(text => {
-      const zoneStart = text.indexOf('ANZ335');
-      const nextZoneStart = text.indexOf('ANZ', zoneStart + 6);
-      const relevantText = (zoneStart !== -1 && nextZoneStart !== -1)
-        ? text.substring(zoneStart, nextZoneStart).trim()
-        : "nws report unavailable.";
-      nwsText.textContent = relevantText;
-    })
-    .catch(err => {
+  const proxyUrls = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(realUrl)}`,
+    `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(realUrl)}`
+  ];
+
+  function tryFetch(urlIndex) {
+    if (urlIndex >= proxyUrls.length) {
       nwsText.textContent = 'error loading nws report.';
-      console.error(err);
-    });
+      console.error('all proxy attempts failed');
+      return;
+    }
+
+    fetch(proxyUrls[urlIndex])
+      .then(response => {
+        if (!response.ok) throw new Error('network response not ok');
+        return response.text();
+      })
+      .then(text => {
+        const zoneStart = text.indexOf('ANZ335');
+        const nextZoneStart = text.indexOf('ANZ', zoneStart + 6);
+        const relevantText = (zoneStart !== -1 && nextZoneStart !== -1)
+          ? text.substring(zoneStart, nextZoneStart).trim()
+          : 'nws report unavailable.';
+        nwsText.textContent = relevantText;
+      })
+      .catch(err => {
+        console.error(`proxy ${urlIndex + 1} failed, trying next if available`, err);
+        tryFetch(urlIndex + 1);
+      });
+  }
+
+  tryFetch(0);
 }
 
 // open/close modals with page scroll lock
