@@ -155,15 +155,23 @@ async function fetchConditions() {
   const conditionsContent = document.getElementById('conditions-content');
 
   try {
-    const [airTempRes, windRes, waterTempRes] = await Promise.all([
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayString = `${yyyy}${mm}${dd}`;
+
+    const [airTempRes, windRes, waterTempRes, tidesRes] = await Promise.all([
       fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8467150&product=air_temperature&units=english&time_zone=lst_ldt&format=json&date=latest'),
       fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8467150&product=wind&units=english&time_zone=lst_ldt&format=json&date=latest'),
-      fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8465705&product=water_temperature&units=english&time_zone=lst_ldt&format=json&date=latest')
+      fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8465705&product=water_temperature&units=english&time_zone=lst_ldt&format=json&date=latest'),
+      fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=web&format=json&units=english&station=8467726&time_zone=lst_ldt&datum=MLLW&interval=hilo&begin_date=${todayString}&end_date=${todayString}`)
     ]);
 
     const airTempData = await airTempRes.json();
     const windData = await windRes.json();
     const waterTempData = await waterTempRes.json();
+    const tideDataToday = await tidesRes.json();
 
     const airTemp = airTempData.data?.[0]?.v ?? 'N/A';
     const windSpeed = windData.data?.[0]?.s ?? 'N/A';
@@ -172,10 +180,51 @@ async function fetchConditions() {
     const waterTemp = waterTempData.data?.[0]?.v ?? 'N/A';
     const lastUpdated = windData.data?.[0]?.t ?? airTempData.data?.[0]?.t ?? waterTempData.data?.[0]?.t ?? '';
 
+    let nextTideHtml = `<strong>Next Tide:</strong> N/A`;
+
+    const now = new Date();
+    let nextTide = null;
+
+    if (tideDataToday.predictions?.length) {
+      for (let tide of tideDataToday.predictions) {
+        const tideTime = new Date(tide.t.replace(' ', 'T'));
+        if (tideTime > now) {
+          nextTide = tide;
+          break;
+        }
+      }
+    }
+
+    // if no upcoming tide today, fetch tomorrow
+    if (!nextTide) {
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      const yyyyT = tomorrow.getFullYear();
+      const mmT = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const ddT = String(tomorrow.getDate()).padStart(2, '0');
+      const tomorrowString = `${yyyyT}${mmT}${ddT}`;
+
+      const tidesTomorrowRes = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=web&format=json&units=english&station=8467726&time_zone=lst_ldt&datum=MLLW&interval=hilo&begin_date=${tomorrowString}&end_date=${tomorrowString}`);
+      const tideDataTomorrow = await tidesTomorrowRes.json();
+
+      if (tideDataTomorrow.predictions?.length) {
+        nextTide = tideDataTomorrow.predictions[0];
+      }
+    }
+
+    if (nextTide) {
+      const tideTime = new Date(nextTide.t.replace(' ', 'T'));
+      const diffMs = tideTime - now;
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+      nextTideHtml = `<strong>Next Tide:</strong> ${nextTide.type === 'H' ? 'High' : 'Low'} in ${hours}h ${minutes}m`;
+    }
+
     conditionsContent.innerHTML = `
       <p><strong>Air Temp:</strong> ${airTemp}°F</p>
       <p><strong>Water Temp:</strong> ${waterTemp}°F</p>
       <p><strong>Wind:</strong> ${windSpeed} knots (${windDir})${windGust !== 'N/A' ? `, Gusting ${windGust} knots` : ''}</p>
+      <p>${nextTideHtml}</p>
       <p><em>Last Updated:</em> ${lastUpdated}</p>
     `;
   } catch (error) {
