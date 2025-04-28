@@ -46,7 +46,17 @@ async function fetchTodayTides(selectedLocation) {
   if (!stationId) return;
 
   const today = new Date();
-  const todayString = today.toISOString().split('T')[0].replace(/-/g, '');
+
+  // get est time manually
+  const estOffsetMs = today.getTimezoneOffset() * 60 * 1000; // browser local offset
+  const estDate = new Date(today.getTime() - estOffsetMs);
+  
+  // build yyyyMMdd
+  const yyyy = estDate.getFullYear();
+  const mm = (estDate.getMonth() + 1).toString().padStart(2, '0');
+  const dd = estDate.getDate().toString().padStart(2, '0');
+  
+  const todayString = `${yyyy}${mm}${dd}`;
   
   const url = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=web&format=json&units=english&station=${stationId}&time_zone=lst_ldt&datum=MLLW&interval=hilo&begin_date=${todayString}&end_date=${todayString}`;
 
@@ -61,7 +71,7 @@ async function fetchTodayTides(selectedLocation) {
     tides.forEach(tide => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>${tide.type === 'H' ? 'High' : 'Low'}</td>
+        <td>${tide.type === 'H' ? 'High ⬆️' : 'Low ⬇️'}</td>
         <td>${formatTime(tide.t)}</td>
         <td>${parseFloat(tide.v).toFixed(2)} ft</td>
       `;
@@ -83,11 +93,18 @@ async function fetchFutureTides(selectedLocation) {
   const stationId = stationMap[selectedLocation];
   if (!stationId) return;
 
-  const today = new Date();
-  const beginDate = today.toISOString().split('T')[0].replace(/-/g, '');
-  const endDateObj = new Date(today);
-  endDateObj.setDate(today.getDate() + 30);
-  const endDate = endDateObj.toISOString().split('T')[0].replace(/-/g, '');
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const beginDate = `${year}${month}${day}`;
+  
+  const endDateObj = new Date(now);
+  endDateObj.setDate(now.getDate() + 30);
+  const endYear = endDateObj.getFullYear();
+  const endMonth = String(endDateObj.getMonth() + 1).padStart(2, '0');
+  const endDay = String(endDateObj.getDate()).padStart(2, '0');
+  const endDate = `${endYear}${endMonth}${endDay}`;
 
   const url = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=web&format=json&units=english&station=${stationId}&time_zone=lst_ldt&datum=MLLW&interval=hilo&begin_date=${beginDate}&end_date=${endDate}`;
 
