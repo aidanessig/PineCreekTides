@@ -7,7 +7,7 @@ the site displays:
 - today's tide predictions
 - a 30-day tide forecast table
 - hourly weather forecasts including temperature, sky conditions, and wind
-- official nws marine reports via popup 
+- official nws marine reports
 - location-specific info for each tide station
 
 the app fetches data live from:
@@ -15,7 +15,7 @@ the app fetches data live from:
 - national weather service (hourly weather forecast)
 - noaa nws text marine reports
 
-everything is styled for mobile and desktop, with a focus on fast loading and simple, readable layouts.
+everything is responsive for convenient use, with a focus on fast loading.
 
 ---
 **built with:**
